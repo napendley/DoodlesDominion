@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tabletop Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="bar">
+  <button id="barToggle" class="ghost" aria-expanded="true" aria-controls="bar" title="Hide the toolbar buttons">▴</button>
+  
+  <button id="shuf">Shuffle decks</button>
+  <button id="zin" class="ghost" aria-label="Zoom in">+</button><button id="zout" class="ghost" aria-label="Zoom out">−</button><button id="zfit" class="ghost">Fit view</button><button id="bankBtn" class="ghost" aria-pressed="true">Hide land bank</button><button id="rotBtn" class="ghost" title="Turn the board a quarter turn counterclockwise">↺ Rotate board</button><button id="setBtn" class="ghost" aria-haspopup="true" aria-expanded="false" aria-controls="settingsPanel">⚙ Settings</button>
+  <button id="invite" class="ghost" type="button" title="Copy a link your friends can open to join this room">Invite</button><span id="room" title="Room code"></span>
+  <span id="total" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" title="Show every move made on the board"></span>
+</div>
+<div id="join"><form id="joinForm"><h1>Tabletop Online</h1>
+  <label for="jname">Your name</label><input id="jname" maxlength="20" autocomplete="nickname" required>
+  <label for="jcode">Room code</label><input id="jcode" maxlength="8" autocomplete="off" placeholder="Leave blank to start a new room">
+  <button type="submit" id="jgo">Start a new room</button><p id="jmsg" role="alert"></p></form></div>
+<div id="plist" aria-label="Players"></div>
+<div id="lobby" hidden><form id="lobbyForm"><h1>Choose your character</h1>
+<div class="lsub">Your color</div><div id="colorGrid" role="radiogroup" aria-label="Character color"></div>
+<div class="lsub">Your character</div><div id="charGrid" role="group" aria-label="Characters"></div>
+<label for="nick">Your nickname</label><input id="nick" maxlength="16" autocomplete="nickname" placeholder="What should everyone call you?">
+<button id="startBtn" type="submit">Choose a character</button></form></div>
+<div id="wrap"><div id="tutorial" hidden></div><div id="deed" hidden role="dialog" aria-label="Land deed"></div><div id="money" hidden role="dialog" aria-label="Pay or collect"></div><div id="stage"><img id="board" alt="Game board" draggable="false" src="assets/board.png"></div></div>
+<div id="handPanel" hidden role="dialog" aria-label="Your hand"></div>
+<div id="settingsPanel" role="region" aria-label="Settings" hidden><div class="sthead"><span>Settings</span><button type="button" class="stx" aria-label="Close">✕</button></div>
+  <div class="stbody"><button id="tut" type="button" class="strow" aria-pressed="false"><span>Tutorial mode</span></button>
+  <button id="fsBtn" type="button" class="strow" title="Fill the whole screen with the game"><span>Full screen</span></button>
+  <button id="reset" type="button" class="strow danger"><span>Reset table</span></button></div></div>
+<div id="logPanel" role="region" aria-label="Move log" hidden><div class="lghead"><span>Move log</span><button type="button" class="lgx" aria-label="Close">✕</button></div><ol id="logList"></ol></div>
+<div id="deckRail" role="group" aria-label="Decks"><div class="rdeck"><button type="button" class="bdeck card down k-quest" id="bdeck-quest" title="Draw a Quest card (it goes to your hand)"><b></b><span>Quest</span></button><small>Quest</small></div><div class="rdeck"><button type="button" class="bdeck card down k-fate" id="bdeck-fate" title="Draw a Fate card. Drop one back here to put it at the bottom"><b></b><span>Fate</span></button><small>Fate</small></div><div class="rdeck"><button type="button" class="bdeck card down k-chest" id="bdeck-chest" title="Draw a Treasure Chest card. Drop one back here to put it at the bottom"><b></b><span>Chest</span></button><small>Chest</small></div></div>
+<div id="inv" role="region" aria-label="Your inventory">
+  <button type="button" class="isec iwho" id="invWho" title="Change your color, character or nickname"><i id="invDot"></i><span id="invName">You</span></button>
+  <div class="isec isov"><span class="invcoin" aria-hidden="true"></span><div><small>Sovereigns</small><b id="purseTotal">$1500</b></div>
+    <button type="button" id="invPay">Pay</button><button type="button" id="invCollect">Collect</button></div>
+  <div class="isec ilands" role="group" aria-label="Your Lands"><div id="invLands"></div></div>
+  <div class="isec itools idice" role="group" aria-label="Dice"><div class="irow">
+    <div class="die" role="button" tabindex="0" aria-label="Roll the dice">⚀</div><div class="die" role="button" tabindex="0" aria-label="Roll the dice">⚂</div>
+    <button type="button" class="iroll" id="invRoll">Roll</button><small id="diceLbl"></small></div></div>
+  <div class="isec itools ibuild" role="group" aria-label="Build: drag onto the board"><div class="irow">
+    <div class="btok t-tavern" data-src="tavern" title="Drag a Tavern onto the board"></div><div class="btok t-keep" data-src="keep" title="Drag a Keep onto the board"></div></div></div>
+  <div class="isec iothers"><small>Players</small><div id="players"></div></div>
+  <button type="button" id="invHand" class="ihand" aria-pressed="false"><span id="invHandTxt">Show hand</span><b id="invQuests" data-n="0" title="Quest cards in your hand">0</b></button>
+</div>
+<div id="status" hidden></div>
+<script src="client.js"></script>
+</body>
+</html>

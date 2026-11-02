@@ -1,0 +1,417 @@
+
+*,*::before,*::after{box-sizing:border-box}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#e8dcbc;--fg:#232a45;--bar:#fdf6e0;--bd:#232a45;--btn:#232a45;--btnfg:#fdf6e0;--felt1:#33405f;--felt2:#26304a;--paper:#fdf6e0;--ink:#232a45;--line:#5d7fa0;--gold:#f2c244;--sub:#5f6884;--table:#2e3a58}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b2236}}
+:root[data-theme="dark"]{--bg:#1b2236}
+body{margin:0;height:100%;display:flex;flex-direction:column;background:var(--bg);color:var(--fg);font-family:"Jost","Trebuchet MS","Segoe UI",system-ui,sans-serif;overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:10}
+#bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:var(--bar);border-bottom:1px solid var(--bd)}
+#bar button{font:inherit;font-size:14px;padding:7px 14px;border:0;border-radius:8px;background:var(--btn);color:var(--btnfg);cursor:pointer}
+#bar button:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+#bar button.ghost{background:transparent;color:var(--fg);border:1px solid var(--bd)}
+#total{margin-left:auto;font-size:14px}
+#barToggle{padding:7px 11px!important;font-size:13px!important;line-height:1}
+#bar.mini{flex-wrap:nowrap;padding:5px 8px}
+#bar.mini>button:not(#barToggle){display:none}
+#bar.mini #total{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+@media (max-width:700px){#bar{gap:6px;padding:6px 8px}#bar button{font-size:13px;padding:6px 10px}#zin,#zout{display:none}#total{flex-basis:100%;order:9;margin-left:0}#bar.mini #total{flex-basis:auto;order:0}#players .chip{font-size:12px;white-space:nowrap}}
+@media (max-width:520px){#players .chip b{display:none}}
+#wrap{touch-action:none;flex:1;position:relative;overflow:hidden;min-height:0}
+#stage{position:absolute;left:0;top:0;width:1840px;height:940px;transform-origin:0 0;border-radius:18px;background:radial-gradient(ellipse at 40% 45%,var(--felt1),var(--felt2));box-shadow:0 0 0 6px #3b2a1c,0 10px 30px rgba(0,0,0,.35);user-select:none;-webkit-user-select:none}
+#stage.bank-closed::before{content:"";position:absolute;left:258px;top:0;bottom:0;width:6px;background:var(--ink);pointer-events:none}
+#board{position:absolute;left:270px;top:20px;width:900px;height:900px;border:3px solid #1b2a2e;border-radius:4px;box-shadow:0 6px 18px rgba(0,0,0,.45);pointer-events:none;display:block}
+.obj{position:absolute;touch-action:none;cursor:grab}
+.obj.lift{cursor:grabbing;filter:drop-shadow(0 8px 6px rgba(0,0,0,.4))}
+
+.pawn{width:27px;height:34px;background-size:contain;background-repeat:no-repeat;background-position:center;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.die{width:54px;height:54px;border-radius:11px;background:#fff8e1;color:#232a45;border:3px solid #232a45;font-size:44px;line-height:46px;text-align:center;box-shadow:0 3px 5px rgba(0,0,0,.4)}
+.card{width:110px;height:110px;border-radius:8px;background:#fff;color:#111;border:1px solid #333;box-shadow:0 2px 5px rgba(0,0,0,.4);padding:24px 8px 8px;font-size:11px;line-height:1.25;text-align:center;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.card em{position:absolute;left:0;right:0;top:0;height:17px;background:var(--c);color:#fff;font-style:normal;font-size:9px;line-height:17px;font-weight:700}
+.card.down{background-color:var(--c);background-size:cover;background-position:center;border:0}
+.card.down span,.card.down em{display:none}
+.deck{overflow:visible;box-shadow:2px 2px 0 #fff,4px 4px 0 var(--c),6px 6px 0 #fff,8px 8px 0 var(--c)}
+.deck b{background:#fff;color:#111;border-radius:10px;padding:2px 8px;font-size:12px}
+.lbl{position:absolute;color:#cfe6e0;font-size:13px;pointer-events:none}
+.tok{width:34px;height:34px;background-size:contain;background-repeat:no-repeat;background-position:center;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.tok.big{width:56px;height:56px}
+.tray{position:absolute;left:692px;top:565px;width:290px;height:125px;background:#fff8e1;border:3px solid #232a45;border-radius:14px;box-shadow:0 4px 0 rgba(0,0,0,.3);pointer-events:none}
+.tray.hot{background:#ffe9a0}
+.t-tavern{--img:url(assets/tavern.png);background-image:var(--img)}
+.t-keep{--img:url(assets/keep.png);background-image:var(--img)}
+#bar button.on{background:var(--btn);color:var(--btnfg)}
+#tutorial{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(620px,calc(100% - 24px));max-height:45%;overflow:auto;touch-action:pan-y;background:var(--bar);color:var(--fg);border:1px solid var(--bd);border-radius:12px;padding:12px 18px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:14px;line-height:1.45;z-index:5}
+#tutorial[hidden]{display:none}
+#tutorial h2{font-size:15px;margin:8px 0 4px}
+#tutorial h2:first-child{margin-top:0}
+#tutorial ul{margin:0;padding-left:18px}
+#tutorial li{margin:3px 0}
+.tok.t-c5,.tok.t-c10,.tok.t-c50,.tok.t-c100,.tok.t-c500{width:36px;height:36px}
+.tok.mid{width:48px;height:48px}
+.t-c5{background-image:url(assets/coin-5.png)}
+.t-c10{background-image:url(assets/coin-10.png)}
+.t-c50{background-image:url(assets/coin-50.png)}
+.t-c100{background-image:url(assets/coin-100.png)}
+.t-c500{background-image:url(assets/coin-500.png)}
+.tok.s2,.tok.s3{background-size:28px 28px;background-repeat:no-repeat;background-position:3px 0,3px 5px;background-image:var(--img),var(--img)}
+.tok.s3{background-position:3px 0,3px 3px,3px 6px;background-image:var(--img),var(--img),var(--img)}
+.cnt{position:absolute;left:50%;top:-13px;transform:translateX(-50%);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#fff8e1;border:2px solid #232a45;color:#232a45;font:700 10px/13px "Fredoka","Trebuchet MS",system-ui,sans-serif;text-align:center;pointer-events:none}
+.zone{position:absolute;border-radius:10px;background:rgba(0,0,0,.22);border:2px solid var(--zc,#fff8e1);pointer-events:none}
+.zone.hot{background:rgba(255,248,225,.2)}
+.zbtn{width:34px;height:15px;border-radius:8px;background:#fff8e1;color:#232a45;font:700 9px/15px "Fredoka","Trebuchet MS",system-ui,sans-serif;text-align:center;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.card.dk{display:block;padding:0 3px 0 6px;border:0;border-left:6px solid var(--c);border-radius:3px;text-align:left;box-shadow:0 1px 2px rgba(0,0,0,.4);overflow:hidden;background:#fff}
+.card.dk em{display:none}
+.card.dk span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card.dk.down{background-color:var(--c);background-size:cover}
+.card.dk.down span{display:none}
+.card.dk.peek{height:auto!important;line-height:1.25!important;overflow:visible;padding:3px 4px 3px 6px;box-shadow:0 4px 10px rgba(0,0,0,.5)}
+.card.dk.peek span{white-space:normal;overflow:visible}
+.ltab{width:32px;height:24px;border-radius:7px;border:2px solid #232a45;color:#fff;font:700 11px/20px "Fredoka","Trebuchet MS",system-ui,sans-serif;text-align:center;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.35);white-space:nowrap;overflow:hidden}
+.ltab[data-g="-1"]{color:#232a45;font-size:10px}
+.ltab.on{box-shadow:0 0 0 3px #fff8e1,0 2px 0 rgba(0,0,0,.35);transform:translateY(-1px)}
+#players{display:flex;gap:6px;flex-wrap:wrap}
+#players .chip{display:flex;align-items:center;gap:6px;font-size:13px;padding:4px 10px 4px 6px;border-radius:14px;border:1px solid var(--bd);color:var(--fg)}
+#players i{width:14px;height:14px;border-radius:50%;border:2px solid #232a45;background:#f46a6a}
+#players b{font-weight:400;opacity:.7}
+.zbtn.wide{width:auto;height:18px;padding:0 9px;font-size:10px;line-height:18px}
+.zbtn.on{background:#ffe9a0}
+.card.dk[data-d="quest"]{border-left-style:dashed}
+.card.dk[data-d="quest"] span::before{content:"Quest: ";font-weight:700;color:#4e7f55}
+.hdiv{position:absolute;height:0;border-top:2px dashed rgba(35,42,69,.3);pointer-events:none}
+.hmini{position:absolute;writing-mode:vertical-rl;color:#fff8e1;font-weight:700;font-size:12px;pointer-events:none;letter-spacing:.5px}
+.card .pr{position:absolute;left:0;right:0;bottom:6px;font-style:normal;font-size:11px;font-weight:700;color:#232a45}
+.card.down .pr{display:none}
+.card.dk .pr{left:auto;right:6px;bottom:auto;top:0;font-size:inherit;line-height:inherit}
+.card.dk.peek .pr{top:3px;line-height:1.25}
+.card.dk[data-d="land"] span{padding-right:28px}
+#stage.hand-min::after{content:"";position:absolute;top:0;bottom:0;left:1594px;width:6px;background:var(--ink);pointer-events:none}
+.harrow{width:18px;height:46px;border-radius:9px 0 0 9px;background:#fff8e1;color:#232a45;border:2px solid #232a45;border-right:0;font-size:10px;line-height:42px;text-align:center;cursor:pointer;box-shadow:0 -1px 3px rgba(0,0,0,.3)}
+.deck.hot{outline:3px solid #fff8e1;outline-offset:4px}
+.deck b{display:none}
+.pawn.char{width:44px;height:88px;border-radius:22px;border:2.5px solid #232a45;box-shadow:0 0 0 4px var(--ring,#ccc),0 0 0 6.5px #232a45;background-size:cover}
+.pawn.char.offb{display:none}
+.pawn.char.onb{transform:scale(.8)}
+.pawn.char.sel{filter:drop-shadow(0 0 3px #fff8e1) drop-shadow(0 0 7px #fff8e1) drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.pawn.char.hop{transition:left .17s ease,top .17s ease}
+@media (prefers-reduced-motion:reduce){.pawn.char.hop{transition:none}}
+.ptag{position:absolute;display:flex;align-items:center;gap:3px;font:700 13px/1 "Fredoka","Trebuchet MS",system-ui,sans-serif;color:#232a45;pointer-events:none;white-space:nowrap}
+#stage.turning .ptag{opacity:0}
+.ptag{transition:opacity .25s}
+.ptag i{width:10px;height:10px;border-radius:50%;background:#f2c244;border:2px solid #232a45;box-sizing:border-box}
+#deed{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(320px,calc(100% - 24px));background:#fff8e1;color:#232a45;border:3px solid #232a45;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.45);z-index:60;overflow:hidden;font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;touch-action:auto}
+#deed[hidden]{display:none}
+#deed.up{position:fixed;left:auto;top:auto;transform:none;z-index:70}
+/* rent card */
+.offer.rent .orent b{font-weight:700}
+/* settings panel */
+#settingsPanel{position:fixed;left:12px;top:58px;width:min(300px,calc(100% - 24px));background:var(--paper);background-image:linear-gradient(rgba(93,127,160,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(93,127,160,.12) 1px,transparent 1px);background-size:20px 20px;border:3px solid var(--ink);border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,.4);z-index:80;overflow:hidden;color:var(--ink);font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif}
+#settingsPanel[hidden]{display:none}
+#settingsPanel .sthead{display:flex;align-items:center;gap:8px;padding:9px 10px 9px 16px;background:var(--gold);border-bottom:3px solid var(--ink);font-weight:600;font-size:18px}
+#settingsPanel .sthead span{flex:1}
+#settingsPanel .stx{background:var(--paper);border:2px solid var(--ink);border-radius:50%;width:28px;height:28px;cursor:pointer;color:var(--ink)}
+#settingsPanel .stbody{padding:10px;display:flex;flex-direction:column;gap:8px}
+#settingsPanel .strow{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;font:600 15px "Fredoka","Trebuchet MS",system-ui,sans-serif;background:#fffdf7;color:var(--ink);border:2px solid var(--ink);border-radius:10px;padding:10px 12px;box-shadow:0 2px 0 var(--ink);cursor:pointer}
+#settingsPanel .strow:active{transform:translateY(2px);box-shadow:none}
+#settingsPanel .strow:focus-visible,#settingsPanel .stx:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#settingsPanel #tut::after,#settingsPanel #fsBtn::after{content:"Off";font-size:12px;padding:2px 10px;border-radius:12px;border:2px solid var(--ink);background:var(--paper);opacity:.75}
+#settingsPanel #tut.on::after,#settingsPanel #fsBtn.on::after{content:"On";background:var(--gold);opacity:1}
+#settingsPanel .danger.armed{background:#f46a6a;color:#fff}
+#setBtn[aria-expanded="true"]{background:var(--gold)}
+#total{cursor:pointer;border-radius:8px;padding:3px 8px}
+#total:hover{background:rgba(35,42,69,.08)}
+#total::after{content:" ▾";font-size:.85em;opacity:.7}
+#total[aria-expanded="true"]::after{content:" ▴"}
+#total:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#logPanel{position:fixed;right:12px;top:58px;width:min(380px,calc(100% - 24px));max-height:min(62vh,520px);display:flex;flex-direction:column;background:var(--paper);background-image:linear-gradient(rgba(93,127,160,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(93,127,160,.12) 1px,transparent 1px);background-size:20px 20px;border:3px solid var(--ink);border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,.4);z-index:80;overflow:hidden;color:var(--ink);font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif}
+#logPanel[hidden]{display:none}
+#logPanel .lghead{display:flex;align-items:center;gap:8px;padding:9px 10px 9px 16px;background:var(--gold);border-bottom:3px solid var(--ink);font-weight:600;font-size:18px}
+#logPanel .lghead span{flex:1}
+#logPanel .lgclear{font:600 12px "Fredoka",system-ui,sans-serif;background:var(--paper);color:var(--ink);border:2px solid var(--ink);border-radius:8px;padding:2px 9px;cursor:pointer}
+#logPanel .lgx{background:var(--paper);border:2px solid var(--ink);border-radius:50%;width:28px;height:28px;cursor:pointer;color:var(--ink)}
+#logPanel button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#logList{list-style:none;margin:0;padding:8px 10px 10px;overflow:auto;touch-action:pan-y}
+#logList li{display:flex;gap:8px;align-items:baseline;background:#fffdf7;border:1.5px solid var(--ink);border-left:7px solid var(--c,#999);border-radius:6px;padding:5px 8px;margin-bottom:5px;font:500 14px/1.3 "Jost","Trebuchet MS",system-ui,sans-serif}
+#logList li small{flex:none;min-width:22px;font:600 11px "Fredoka",system-ui,sans-serif;opacity:.55}
+#logList li.new{background:#ffe9a0}
+#logList .lgempty{border:0;background:none;opacity:.6;padding:8px 4px}
+@media (max-width:700px){#logPanel{top:52px}}
+#deed .dhead{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 14px 18px;color:#fff;font-weight:700;font-size:20px;border-bottom:3px solid #232a45}
+#deed .dhead button{background:#fff8e1;color:#232a45;border:2px solid #232a45;border-radius:50%;width:28px;height:28px;font-size:13px;cursor:pointer;flex:none}
+#deed .dhead button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#deed .dprice{padding:12px 18px 4px;font-size:15px}
+#deed .dprice b{font-size:20px}
+#deed table{width:calc(100% - 36px);margin:6px 18px 4px;border-collapse:collapse;font-size:15px}
+#deed td{padding:5px 0;border-bottom:1px dashed rgba(35,42,69,.25)}
+#deed td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+#deed tr.sub td{font-size:13px;opacity:.75}
+#deed tr.keep td{border-bottom:0;font-size:16px}
+#deed p{margin:8px 18px 16px;font-size:13px;line-height:1.45}
+#deed p.big{font-size:15px}
+#deed i{display:inline-block;width:11px;height:11px;border-radius:50%;background:#f2c244;border:2px solid #232a45;box-sizing:border-box;margin-right:5px;vertical-align:-1px}
+.pcoin.empty{opacity:.3;cursor:default}
+#inv{display:flex;align-items:center;gap:0;background:var(--paper);border-top:3px solid var(--ink);padding:6px 10px;padding-bottom:max(6px,env(safe-area-inset-bottom));overflow-x:auto;color:var(--ink);font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;flex:none}
+#inv .isec{display:flex;align-items:center;gap:8px;padding:0 14px;border-right:2px dashed rgba(35,42,69,.25);white-space:nowrap}
+#inv small{display:block;font-size:11px;font-weight:500;opacity:.7;line-height:1.1}
+#inv b{font-weight:700;font-size:20px;line-height:1.1}
+#inv .iwho{font-weight:600;font-size:15px;padding-left:4px}
+#inv .iwho i{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink);flex:none}
+#inv .invcoin{width:42px;height:60px;border-radius:9px;border:2.5px solid var(--ink);box-shadow:0 2px 0 var(--ink);flex:none;background-image:url("assets/sovereigns-card.jpg");background-size:cover;background-position:center;background-color:#3d4744}
+#inv button{font:600 13px "Fredoka","Trebuchet MS",system-ui,sans-serif;background:var(--paper);color:var(--ink);border:2px solid var(--ink);border-radius:10px;padding:4px 12px;box-shadow:0 2px 0 var(--ink);cursor:pointer}
+#inv button:active{transform:translateY(2px);box-shadow:none}
+#inv button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#inv #invPay{background:var(--ink);color:var(--paper)}
+#inv .ilands>div{display:flex;gap:4px;flex-wrap:nowrap}
+#inv .iland{padding:2px 7px!important;border-radius:8px!important;font-size:12px!important;box-shadow:none!important;border-left:8px solid var(--c)!important;background:#fff!important}
+#inv .iland.full{background:#ffe9a0!important}
+#inv .inone{font-size:13px;opacity:.6}
+#inv .ihand{margin-left:auto}
+#inv .irow{display:flex;align-items:center;gap:6px}
+#inv .itools{flex-direction:row;align-items:center;gap:8px;background:rgba(93,127,160,.08);align-self:stretch}
+#inv .itools small{writing-mode:vertical-rl;transform:rotate(180deg);font-size:10px;letter-spacing:.5px}
+#inv #diceLbl{writing-mode:horizontal-tb;transform:none;order:3;font-size:12px;font-weight:600;opacity:.8;min-width:44px}
+#inv .bdeck{position:relative;width:42px!important;height:42px!important;min-width:0;padding:0!important;border:2px solid var(--ink)!important;border-radius:7px!important;box-shadow:2px 2px 0 #fff,4px 4px 0 var(--ink)!important;background-size:cover!important;background-position:center!important;cursor:pointer;overflow:visible;display:block}
+#inv .bdeck b{display:none}
+#inv .bdeck span{display:none}
+#inv .bdeck:hover{transform:translateY(-2px)}
+#inv .bdeck.empty{opacity:.35}
+#inv .bdeck.hot{outline:3px solid var(--gold);outline-offset:3px}
+#inv .die{width:38px;height:38px;font-size:36px;line-height:32px;border-radius:9px;border:2.5px solid var(--ink);background:#fff8e1;color:var(--ink);text-align:center;cursor:pointer;box-shadow:0 2px 0 var(--ink);user-select:none}
+#inv .die:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#inv .iroll{background:var(--ink)!important;color:var(--paper)!important}
+#inv .btok{width:42px;height:42px;background-size:contain;background-repeat:no-repeat;background-position:center;cursor:grab;touch-action:none;filter:drop-shadow(0 2px 1px rgba(0,0,0,.35));transition:transform .1s}
+#inv .btok:hover{transform:translateY(-2px) scale(1.05)}
+#handPanel{bottom:86px!important}
+@media (max-width:1700px){#inv .iothers{display:none}}
+@media (max-width:1250px){#inv .iwho{display:none!important}#inv .ilands small{display:none}}
+@media (max-width:700px){#inv{flex-wrap:wrap;row-gap:6px;justify-content:center}#inv .isec{border-right:0}#inv .itools small:not(#diceLbl){display:none}#inv .ihand{margin-left:0}#inv .bdeck{width:38px!important;height:38px!important}#inv .die{width:34px;height:34px;font-size:32px;line-height:28px}#inv .btok{width:36px;height:36px}}
+#inv button.iwho{background:none!important;border:0!important;box-shadow:none!important;padding:0 14px 0 4px!important;border-right:2px dashed rgba(35,42,69,.25)!important;border-radius:0!important;font:600 15px "Fredoka","Trebuchet MS",system-ui,sans-serif!important;display:flex;align-items:center;gap:8px}
+#inv button.iwho:hover span{text-decoration:underline}
+#inv #players{display:flex;gap:5px;flex-wrap:nowrap}
+#inv #players .chip:not(.other){display:none}
+#inv #players .chip.other{padding:2px 9px 2px 4px;font-size:12px}
+#inv{padding-top:4px;padding-bottom:max(4px,env(safe-area-inset-bottom))}
+#inv b{font-size:18px}
+@media (max-width:1100px){#inv .iothers{display:none}}
+#inv.hot{background:#ffe9a0}
+#handPanel{position:fixed;right:12px;bottom:70px;width:min(380px,calc(100% - 24px));max-height:min(70vh,640px);overflow:auto;background:var(--paper);background-image:linear-gradient(rgba(93,127,160,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(93,127,160,.12) 1px,transparent 1px);background-size:20px 20px;border:3px solid var(--ink);border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,.4);z-index:40;color:var(--ink);font-family:"Jost","Trebuchet MS",system-ui,sans-serif}
+#handPanel[hidden]{display:none}
+#handPanel .hphead{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;padding:10px 12px 10px 16px;background:var(--gold);border-bottom:3px solid var(--ink);font:600 18px "Fredoka","Trebuchet MS",system-ui,sans-serif;z-index:1}
+#handPanel .hpx{background:var(--paper);border:2px solid var(--ink);border-radius:50%;width:28px;height:28px;cursor:pointer;color:var(--ink)}
+#handPanel section{padding:8px 14px 4px}
+#handPanel h3{margin:4px 0 6px;font:600 14px "Fredoka","Trebuchet MS",system-ui,sans-serif}
+#handPanel .hprow{display:flex;align-items:center;gap:6px;background:#fffdf7;border:1.5px solid var(--ink);border-left:7px solid var(--c,#999);border-radius:6px;padding:4px 6px;margin-bottom:5px}
+#handPanel .hpname{flex:1;min-width:0;text-align:left;background:none;border:0;font:500 13px "Jost","Trebuchet MS",system-ui,sans-serif;color:var(--ink);cursor:pointer;padding:2px}
+#handPanel .hpname:disabled{cursor:default;font-size:12px;line-height:1.3}
+#handPanel .hprow b{font:600 13px "Fredoka","Trebuchet MS",system-ui,sans-serif}
+#handPanel .hpact{font:600 11px "Fredoka","Trebuchet MS",system-ui,sans-serif;background:var(--paper);color:var(--ink);border:2px solid var(--ink);border-radius:8px;padding:2px 7px;cursor:pointer;white-space:nowrap}
+#handPanel .hpempty{font-size:13px;opacity:.65;margin:0 0 6px}
+#handPanel .hpnote{font-size:11px;opacity:.65;margin:6px 14px 12px}
+#handPanel button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#inv .ihand[aria-pressed="true"]{background:var(--gold)}
+@media (max-width:700px){#inv{padding:5px 6px}#inv .isec{padding:0 8px;gap:6px}#inv .iwho,#inv .invcoin,#inv .isov small,#inv .ilands small{display:none}#inv b{font-size:17px}#inv button{padding:3px 9px;font-size:12px}}
+@media (max-width:1250px){#inv .invcoin{width:37px;height:53px}}
+/* calmer bar: fewer dividers, no tinted panels, no vertical labels, more breathing room */
+#inv{padding-top:7px;padding-bottom:max(7px,env(safe-area-inset-bottom))}
+#inv .isec{padding:0 20px;gap:12px;border-right:0}
+#inv .iwho{border-right:0!important}
+#inv .isov{border-left:0}
+#inv .ilands{border-left:2px dashed rgba(35,42,69,.2);border-right:2px dashed rgba(35,42,69,.2)}
+#inv .itools{background:none;align-self:center;padding:0 14px;border:0}
+#inv .idecks{border-left:2px dashed rgba(35,42,69,.2);margin-left:auto}
+#inv .ibuild{border-right:2px dashed rgba(35,42,69,.2)}
+#inv .itools .irow{gap:14px}
+#inv #diceLbl{order:0;writing-mode:horizontal-tb;transform:none;font-size:15px;font-weight:600;min-width:30px;opacity:.85}
+#inv .iothers{display:none!important}
+#inv .ihand{margin-left:0;display:flex;align-items:center;gap:8px}
+#inv .ihand b{font-size:12px;min-width:20px;height:20px;line-height:16px;border-radius:10px;background:var(--ink);color:var(--paper);padding:0 5px;text-align:center}
+#inv .ihand b[data-n="0"]{display:none}
+#inv .ilands>div{gap:5px}
+@media (max-width:1250px){#inv .isec{padding:0 12px}#inv .itools{padding:0 8px}}
+@media (max-width:700px){#inv .isec{padding:0 8px;border:0!important;margin-left:0!important}#inv .itools .irow{gap:10px}#inv #diceLbl{font-size:13px}}
+/* deck rail: the three decks float on the right edge, joined to the bottom bar like a tab */
+#deckRail{position:fixed;right:0;bottom:calc(var(--invh,59px) - 3px);z-index:6;display:flex;flex-direction:column;gap:14px;align-items:center;padding:14px 14px 17px 14px;background:var(--paper);border:3px solid var(--ink);border-right:0;border-bottom:0;border-radius:16px 0 0 0;font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;color:var(--ink)}
+#deckRail .rdeck{display:flex;flex-direction:column;align-items:center;gap:5px}
+#deckRail small{font-size:11px;font-weight:600;opacity:.75;line-height:1}
+#deckRail .bdeck{position:relative;width:68px!important;height:68px!important;min-width:0;padding:0!important;border:2.5px solid var(--ink)!important;border-radius:9px!important;box-shadow:3px 3px 0 #fff,6px 6px 0 var(--ink)!important;background-size:cover!important;background-position:center!important;cursor:pointer;overflow:visible;display:block;margin:0 6px 6px 0}
+#deckRail .bdeck b,#deckRail .bdeck span{display:none}
+#deckRail .bdeck:hover{transform:translateY(-2px)}
+#deckRail .bdeck:active{transform:translateY(1px)}
+#deckRail .bdeck.empty{opacity:.35}
+#deckRail .bdeck.hot{outline:3px solid var(--gold);outline-offset:3px}
+#deckRail .bdeck:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+#inv .idice{border-left:2px dashed rgba(35,42,69,.2);margin-left:auto}
+#handPanel{right:118px!important}
+@media (max-width:700px){#deckRail{gap:9px;padding:9px 8px 11px 9px}#deckRail .bdeck{width:44px!important;height:44px!important;margin:0 5px 5px 0}#deckRail small{font-size:10px}#handPanel{right:12px!important}}
+.sovcard{background-color:#3d4744!important;background-image:url("assets/sovereigns-card.jpg")!important;background-size:cover!important;background-position:center top!important;background-repeat:no-repeat!important;border:3px solid var(--ink)!important;border-radius:14px}
+.sovcard.hot{box-shadow:0 0 0 4px #f2c244,0 4px 0 rgba(0,0,0,.3)}
+.lbl.sovword{text-align:center;color:#e3c84a;font:700 30px "Fredoka","Trebuchet MS",system-ui,sans-serif;letter-spacing:2px;text-shadow:0 2px 0 #232a45,0 0 1px #232a45,2px 0 0 #232a45,-2px 0 0 #232a45,0 -2px 0 #232a45;pointer-events:none}
+.lbl.sovtotal{text-align:center;color:#fff8e1;font:700 40px "Fredoka","Trebuchet MS",system-ui,sans-serif;text-shadow:0 3px 0 rgba(0,0,0,.35);pointer-events:auto}
+.mbtn.sovbtn{height:32px;line-height:28px;font-size:14px;text-align:center;padding:0}
+.ptag.owned{color:#fff;padding:2px 6px;border-radius:8px;border:2px solid #232a45}
+.offer{position:absolute;transform:translate(-50%,-50%);width:320px;background:#fff8e1;color:#232a45;border:3px solid #232a45;border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.5);z-index:6000;overflow:hidden;font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif}
+.offer .ohead{padding:14px 18px;color:#fff;font-weight:700;font-size:21px;border-bottom:3px solid #232a45}
+.offer .oprice{padding:12px 18px 0;font-size:15px}.offer .oprice b{font-size:22px}
+.offer .orent{padding:4px 18px 0;font-size:12px;opacity:.75}
+.offer .olist{list-style:none;margin:8px 18px 2px;padding:0;font-size:14px}
+.offer .olist li{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed rgba(35,42,69,.25)}
+.offer .olist li span{display:flex;align-items:center;gap:2px}
+.offer .olist li b{font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;font-weight:600}
+.offer .olist li.sub{font-size:12px;opacity:.75}
+.offer .olist li.keep{border-bottom:0;font-size:15px}
+.offer .olist i.tv,.offer .olist i.kp{display:inline-block;width:15px;height:15px;background-size:contain;background-repeat:no-repeat;margin-right:1px}
+.offer .olist li span i:last-of-type{margin-right:6px}
+.offer .obody{padding:6px 18px 16px}
+.offer .obody p{font-size:13px;line-height:1.45;margin:8px 0}
+.offer .obtns{display:flex;gap:8px;margin-top:6px}
+.offer button{font:700 14px "Fredoka","Trebuchet MS",system-ui,sans-serif;border-radius:10px;cursor:pointer}
+.offer .obuy{flex:1;padding:11px;border:0;background:var(--ink);color:#fff}
+.offer .obuy:disabled{background:#9aa9a6;cursor:not-allowed}
+.offer .oauc{flex:1;padding:11px;border:2px solid #232a45;background:#fff;color:#232a45}
+.offer .owarn{color:#b0303a}
+.offer .ohigh{font-size:15px;margin-top:10px}.offer .ohigh b{font-size:20px}
+.offer .olog{list-style:none;margin:6px 0;padding:0;font-size:12px;opacity:.8;min-height:4.4em}
+.offer .obids{display:flex;gap:6px}
+.offer .obids button{flex:1;padding:9px 4px;border:0;background:var(--ink);color:#fff}
+.offer .obids button:disabled{background:#9aa9a6;cursor:not-allowed}
+.offer .ocustom{display:flex;align-items:center;gap:6px;margin-top:8px;border:2px solid #232a45;border-radius:10px;background:#fff;padding:2px 2px 2px 10px}
+.offer .ocustom span{font-weight:700}
+.offer .ocustom input{flex:1;min-width:0;border:0;font:700 16px "Fredoka","Trebuchet MS",system-ui,sans-serif;background:transparent;color:#232a45;outline:none;padding:6px 0}
+.offer .ocustom .obid{padding:7px 14px;border:0;background:#232a45;color:#fff}
+.offer .opass{width:100%;margin-top:8px;padding:9px;border:2px solid #232a45;background:#fff;color:#232a45}
+.offer .owait{font-style:italic;opacity:.7}
+.offer .oend{font-size:15px!important}
+.offer button:focus-visible,.offer input:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#money .mto{margin:12px 18px 0;font-weight:700;font-size:13px}
+#money .mdest{flex-wrap:wrap;gap:6px!important;margin-top:6px!important}
+#money .pchip{position:relative;display:flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border:2px solid #232a45;border-radius:16px;background:#fff;cursor:pointer;font-size:13px;font-weight:700}
+#money .pchip input{position:absolute;opacity:0;pointer-events:none}
+#money .pchip i{width:14px;height:14px;border-radius:50%;border:2px solid #232a45}
+#money .pchip:has(input:checked){background:#ffe9a0}
+#money .pchip:has(input:focus-visible){outline:3px solid var(--ink);outline-offset:2px}
+#players .chip.other{display:flex;align-items:center;gap:6px;font-size:13px;padding:4px 10px 4px 6px;border-radius:14px;border:1px solid var(--bd);color:var(--fg)}
+.mbtn{height:26px;padding:0 16px;border-radius:13px;background:#fff8e1;color:#232a45;border:2px solid #232a45;font:700 12px/22px "Fredoka","Trebuchet MS",system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.portrait .mbtn{height:22px;padding:0 12px;line-height:18px;font-size:11px}
+#money{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(340px,calc(100% - 24px));background:#fff8e1;color:#232a45;border:3px solid #232a45;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.45);z-index:61;font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;padding:0 0 16px;overflow:hidden;touch-action:auto}
+#money[hidden]{display:none}
+#money .mhead{display:flex;justify-content:space-between;align-items:center;background:#f2c244;border-bottom:3px solid #232a45;padding:12px 14px 12px 18px;font-weight:700;font-size:19px}
+#money .mhead button{background:#fff8e1;border:2px solid #232a45;border-radius:50%;width:28px;height:28px;cursor:pointer;color:#232a45}
+#money>label{display:block;margin:14px 18px 4px;font-weight:700;font-size:13px}
+#money .mrow{display:flex;align-items:center;margin:0 18px;border:2px solid #232a45;border-radius:10px;background:#fff;padding:0 10px}
+#money .dollar{font-weight:700;font-size:20px}
+#money input[type=number]{flex:1;min-width:0;border:0;font:700 22px "Fredoka","Trebuchet MS",system-ui,sans-serif;padding:8px 6px;background:transparent;color:#232a45;outline:none}
+#money .mrow:focus-within{outline:3px solid var(--ink);outline-offset:1px}
+#money .mquick{display:flex;flex-wrap:wrap;gap:6px;margin:10px 18px 0}
+#money .mquick button{font:700 13px "Fredoka","Trebuchet MS",system-ui,sans-serif;padding:5px 10px;border-radius:8px;border:2px solid #232a45;background:#fff;color:#232a45;cursor:pointer}
+#money .mdest{display:flex;gap:16px;margin:12px 18px 0;font-size:14px}
+#money .mnote{margin:12px 18px 0;font-size:13px;line-height:1.4;min-height:2.8em}
+#money .mgo{display:block;width:calc(100% - 36px);margin:8px 18px 0;font:700 16px "Fredoka","Trebuchet MS",system-ui,sans-serif;padding:11px;border:0;border-radius:10px;background:var(--ink);color:#fff;cursor:pointer}
+#money .mgo:disabled{background:#9aa9a6;cursor:not-allowed}
+#stage:not(.portrait) .deck{width:136px;height:136px}
+#stage:not(.portrait) .die{width:110px;height:110px;font-size:100px;line-height:96px;border-radius:18px;border-width:4px}
+#stage:not(.portrait) .rollbtn{height:32px;font-size:15px;line-height:28px}
+.rollbtn{width:119px;height:24px;border-radius:8px;background:#fff8e1;color:#232a45;border:2px solid #232a45;font:700 12px/20px "Fredoka","Trebuchet MS",system-ui,sans-serif;text-align:center;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.rollbtn:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+#board{transition:transform .4s ease}
+#stage.turning .obj:not(.dk){transition:left .4s ease,top .4s ease}
+@media (prefers-reduced-motion:reduce){#board,#stage.turning .obj{transition:none!important}}
+.deck.empty{opacity:.35}
+#lobby{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 40% 40%,#1f6b5c,#124a40);overflow:auto}
+#lobby[hidden]{display:none}
+#lobbyForm{width:min(720px,100%);background:#fff8e1;color:#232a45;border:3px solid #232a45;border-radius:18px;padding:24px;box-shadow:0 6px 0 rgba(0,0,0,.3);display:flex;flex-direction:column;gap:8px}
+#lobbyForm h1{margin:0 0 6px;font-size:26px}
+#charGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:12px;margin-bottom:6px}
+.cpick{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border:2px solid transparent;border-radius:14px;background:transparent;cursor:pointer;font:700 15px "Fredoka","Trebuchet MS",system-ui,sans-serif;color:#232a45}
+.cpick img{width:66px;height:132px;border-radius:33px;border:3px solid #232a45;box-shadow:0 0 0 5px var(--ring,#c9c3ad),0 0 0 8px #232a45,0 6px 8px rgba(0,0,0,.25);margin:9px 0 6px;transition:transform .15s,box-shadow .15s}
+.lsub{font-weight:700;font-size:14px;margin-top:4px}
+@media (max-width:520px){#charGrid{grid-template-columns:repeat(5,1fr);gap:2px}.cpick{padding:6px 0;font-size:11px;gap:4px}.cpick img{width:42px;height:84px;border-radius:21px;border-width:2px;box-shadow:0 0 0 3px var(--ring,#c9c3ad),0 0 0 5px #232a45;margin:6px 0 4px}.swatch{width:32px;height:32px}#colorGrid{gap:8px}#lobbyForm{padding:18px}}
+#colorGrid{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 8px}
+.swatch{width:38px;height:38px;border-radius:50%;border:3px solid #232a45;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3);padding:0}
+.swatch[aria-checked="true"]{box-shadow:0 0 0 4px #fff8e1,0 0 0 7px #232a45;transform:scale(1.06)}
+.swatch:focus-visible{outline:3px solid #232a45;outline-offset:5px}
+.cpick:hover img{transform:translateY(-3px)}
+.cpick[aria-pressed="true"]{background:#ffe9a0;border-color:#232a45}
+.cpick:focus-visible,#lobbyForm input:focus-visible,#startBtn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#lobbyForm label{font-weight:700;font-size:14px}
+#lobbyForm input{font:inherit;font-size:17px;padding:10px 12px;border:2px solid #232a45;border-radius:10px;background:#fff;color:#232a45}
+#startBtn{margin-top:8px;font:700 17px "Fredoka","Trebuchet MS",system-ui,sans-serif;padding:12px;border:0;border-radius:10px;background:var(--ink);color:#fff;cursor:pointer}
+#startBtn:disabled{background:#9aa9a6;cursor:not-allowed}
+.ntag{position:absolute;left:50%;top:-20px;transform:translateX(-50%);white-space:nowrap;background:#fff8e1;color:#232a45;border:2px solid #232a45;border-radius:9px;padding:0 7px;font:700 11px/15px "Fredoka","Trebuchet MS",system-ui,sans-serif;pointer-events:none;box-shadow:0 2px 0 rgba(0,0,0,.3)}
+#players .chip{background:transparent;cursor:pointer;font:inherit;font-size:13px}
+
+/* ===== art-matched theme: paper panels, navy ink outlines, blue graph-paper, rounded display type ===== */
+body{background:var(--bg)}
+#bar{background:var(--paper);border-bottom:3px solid var(--ink);gap:8px}
+#bar button,#bar button.ghost{font:600 14px "Fredoka","Trebuchet MS",system-ui,sans-serif;background:var(--paper);color:var(--ink);border:2px solid var(--ink);border-radius:10px;padding:5px 14px;box-shadow:0 2px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+#bar button:hover{background:#fff1c7}
+#bar button:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
+#bar button.on,#tut[aria-pressed="true"]{background:var(--gold)}
+#shuf{background:var(--ink)!important;color:var(--paper)!important}
+#bar button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#total{color:var(--ink);font-weight:500}
+#players .chip,#players .chip.other{font:500 13px "Fredoka","Trebuchet MS",system-ui,sans-serif;background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:16px;padding:3px 10px 3px 5px}
+#players .chip i,#players i{border-color:var(--ink)}
+#players b{opacity:.7;font-weight:500}
+#stage{background-color:var(--table);background-image:linear-gradient(rgba(253,246,224,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(253,246,224,.05) 1px,transparent 1px);background-size:26px 26px;box-shadow:0 0 0 4px var(--ink),0 0 0 10px var(--paper),0 0 0 13px var(--ink),0 16px 36px rgba(0,0,0,.35)}
+.lbl{color:var(--paper);font:500 14px "Fredoka","Trebuchet MS",system-ui,sans-serif}
+.zone{background-color:var(--paper);background-image:linear-gradient(rgba(93,127,160,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(93,127,160,.13) 1px,transparent 1px);background-size:20px 20px;border:3px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 rgba(0,0,0,.3)}
+.zone.hot{background-color:#ffe9a0}
+.tray{background-color:var(--paper);background-image:linear-gradient(rgba(93,127,160,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(93,127,160,.13) 1px,transparent 1px);background-size:20px 20px}
+.tray .lbl,.lbl.ink{color:var(--ink)}
+.hmini{color:var(--ink)!important;font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif}
+.card{background:#fffdf7;border:2px solid var(--ink);border-radius:10px;color:var(--ink);font-family:"Jost","Trebuchet MS",system-ui,sans-serif}
+.card em{font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;font-weight:600;letter-spacing:.3px;border-bottom:2px solid var(--ink)}
+.card.dk{background:#fffdf7;border:1.5px solid var(--ink);border-left:7px solid var(--c);border-radius:6px;box-shadow:0 1px 0 rgba(35,42,69,.35);color:var(--ink)}
+.card.dk .pr{font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;font-weight:600}
+.die{border-radius:12px;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.ltab{box-shadow:0 2px 0 var(--ink)}
+.ltab.on{box-shadow:0 0 0 3px var(--gold),0 2px 0 var(--ink)}
+#tutorial,#pop{background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,.4)}
+#tutorial h2,#pop h2{font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;font-weight:600}
+#lobby{background-color:var(--table);background-image:linear-gradient(rgba(253,246,224,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(253,246,224,.05) 1px,transparent 1px);background-size:26px 26px}
+/* the blue graph paper now fills the whole play area, so no side looks cut off */
+#wrap{background-color:var(--table);background-image:linear-gradient(rgba(253,246,224,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(253,246,224,.06) 1px,transparent 1px);background-size:26px 26px}
+#stage{background:none!important;box-shadow:none!important;border-radius:0}
+#stage.bank-closed::before,#stage.hand-min::after{display:none}
+#lobbyForm{background-color:var(--paper);background-image:linear-gradient(rgba(93,127,160,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(93,127,160,.12) 1px,transparent 1px);background-size:22px 22px;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+#lobbyForm h1,.dhead,.ohead,.mhead{font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif!important;font-weight:600!important}
+#startBtn,#money .mgo,.offer .obuy,.offer .obids button{background:var(--ink)!important;color:var(--paper)!important;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+#startBtn:disabled,#money .mgo:disabled,.offer .obuy:disabled,.offer .obids button:disabled{background:#a7a99f!important;box-shadow:none}
+#deed,#money,.offer{background-color:var(--paper)}
+#money .mquick button,.offer .oauc,.offer .opass,#money .pchip{background:#fff;box-shadow:0 2px 0 var(--ink)}
+.cpick[aria-pressed="true"]{background:#ffe9a0}
+.ptag{font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;font-weight:600}
+.ntag{font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif}
+@media (max-width:700px){#bar.mini #players .chip.other{display:none}}
+.rollbtn,.mbtn,.zbtn,.recenter,.harrow{font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif!important;font-weight:600!important}
+
+/* ---- online additions ---- */
+#join{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background-color:var(--table);background-image:linear-gradient(rgba(253,246,224,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(253,246,224,.05) 1px,transparent 1px);background-size:26px 26px}
+#join[hidden]{display:none}
+#joinForm{width:min(380px,100%);background-color:var(--paper);background-image:linear-gradient(rgba(93,127,160,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(93,127,160,.12) 1px,transparent 1px);background-size:22px 22px;color:var(--ink);border:3px solid var(--ink);border-radius:16px;padding:22px;box-shadow:0 6px 0 rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px;font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif}
+#joinForm h1{margin:0 0 8px;font-size:26px;font-weight:600}
+#joinForm label{font-size:14px;font-weight:600;margin-top:6px}
+#joinForm input{font:inherit;font-size:17px;padding:10px 12px;border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink)}
+#joinForm input:focus-visible,#jgo:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#jgo{margin-top:12px;font:700 17px "Fredoka",system-ui,sans-serif;padding:12px;border:0;border-radius:10px;background:var(--ink);color:#fff;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+#jmsg{margin:4px 0 0;font-size:13px;color:#b0303a;min-height:1em}
+#status{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:20px;font:500 14px "Fredoka",system-ui,sans-serif;z-index:90;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+#status[hidden]{display:none}
+#room{font:600 13px "Fredoka",system-ui,sans-serif;letter-spacing:1px;opacity:.75}
+#plist{display:flex;gap:6px;flex-wrap:wrap;padding:5px 12px;background:var(--paper);border-bottom:2px solid var(--ink);min-height:36px;align-items:center}
+#plist:empty{display:none}
+#plist .pc{display:flex;align-items:center;gap:6px;font:500 13px "Fredoka",system-ui,sans-serif;background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:16px;padding:2px 10px 2px 5px;white-space:nowrap}
+#plist .pc.me{background:#ffe9a0}
+#plist .pc.off{opacity:.5}
+#plist .pc i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);flex:none}
+#plist .pc b{font-weight:500;opacity:.7}
+#plist .potbtn{font:600 13px "Fredoka",system-ui,sans-serif;background:var(--gold);color:var(--ink);border:2px solid var(--ink);border-radius:16px;padding:2px 12px;cursor:pointer;box-shadow:0 2px 0 var(--ink)}
+.lpick.taken,.swatch.taken{opacity:.3;cursor:not-allowed}
+.cpick.taken{opacity:.35;cursor:not-allowed}
+.cpick.taken::after{content:"taken";font:600 11px "Fredoka",system-ui,sans-serif}
+.swatch.taken{position:relative}
+.swatch.taken::after{content:"✕";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;text-shadow:0 0 3px #232a45}
+.offer.wait{pointer-events:none}
+.ntag.you{background:var(--gold)}
+.ghostcard{position:absolute;z-index:9000;pointer-events:none;opacity:.92}
+@media (max-width:700px){#plist{padding:4px 8px}}
